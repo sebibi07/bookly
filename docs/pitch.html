@@ -313,39 +313,39 @@ SELECT order_number, carrier, tracking_no
   <!-- 5 ................................................................ -->
   <section class="slide">
     <div>
-      <span class="eyebrow">What I&rsquo;d change first</span>
-      <h2>And what the evals already caught</h2>
+      <span class="eyebrow">Moving to production</span>
+      <h2>An even greater CX, and the scale to serve it</h2>
     </div>
-    <div class="cols split">
-      <div>
-        <ol class="next">
-          <li><b>Persist sessions to Redis.</b> <span>Sessions are a dict in memory today. Fine for
-            a prototype, not under load.</span></li>
-          <li><b>Stream the responses.</b> <span>The biggest remaining latency win. The agent
-            speaks, calls a tool, speaks again — and today the customer waits through all of it
-            before seeing a word.</span></li>
-          <li><b>Run the evals against the live model in CI.</b> <span>They run on the scripted
-            engine, so they prove the orchestration and say nothing about how the model behaves
-            under it.</span></li>
-          <li><b>Grow the eval set from production traffic.</b> <span>My test set is made up. At
-            go-live I would collect real requests and evaluate against those.</span></li>
-          <li><b>Give the policy engine to the CX team.</b> <span>Changing a return window from 30
-            to 60 days should not need a deploy.</span></li>
-        </ol>
+    <div class="cols pair">
+      <div class="card">
+        <span class="tag">Greater CX</span>
+        <ul class="guards">
+          <li><b>Stream the responses.</b> The biggest remaining latency win. The agent speaks,
+            calls a tool, speaks again — and today the customer waits through all of it before
+            seeing a word.</li>
+          <li><b>Grow the eval set from production traffic.</b> My test set is made up. At go-live
+            I would collect real requests and evaluate against those.</li>
+          <li><b>Give the policy engine to the CX team.</b> Changing a return window from 30 to 60
+            days should not need a deploy.</li>
+        </ul>
       </div>
       <div class="card">
-        <span class="tag">Evidence</span>
-        <h3>13 checks, and three real bugs</h3>
-        <p>Ten scripted conversations assert on the trace — including that a tool was never
-          <em>reachable</em>, not merely never called. Three probes bypass the conversation entirely:
-          token scoping, backend failure, and an attempt to redirect an outbound email.</p>
-        <p style="margin-top:10px">They caught an order number being parsed as a ZIP code, a turn&rsquo;s
-          first message being silently dropped, and a schema the API rejects — which had quietly
-          disabled routing on every turn.</p>
+        <span class="tag">Scalability</span>
+        <ul class="guards">
+          <li><b>Persist sessions to Redis.</b> Sessions are a dict in memory today. Fine for a
+            prototype, not under load.</li>
+          <li><b>Run the evals against the live model in CI.</b> They run on the scripted engine,
+            so they prove the orchestration and say nothing about how the model behaves under it.</li>
+          <li><b>Upgrade the token service.</b> Hand-rolled minting becomes a token exchange against
+            the IdP you already run — same scoped card, issued by a system you already trust.
+            <b>Appendix&nbsp;A.</b></li>
+        </ul>
       </div>
     </div>
-    <p class="pull">Deflection rate is a vanity metric if the contained conversations were bad ones.
-      <b>These assert the properties that survive a model swap.</b></p>
+    <p class="pull">The three steps do not change in production. What changes is how fast they
+      feel, how much load they take, and who owns the rules. If I could only do one first:
+      <b>run it against real traffic.</b> Customers will confirm my annoyances or hand me
+      better ones.</p>
   </section>
 
   <!-- A ................................................................ -->
