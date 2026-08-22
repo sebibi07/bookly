@@ -325,6 +325,11 @@ thing only a live call can prove: **that nothing silently fell back.**
   questions and inputs the users have. At Go-Live I'd collect a corpus of requests and evaluate the harness on it. 
 5. **Make the policy engine a service the CX team owns.** For example updated return windows (30 days -> 60 days) or other policy changes require a code update. 
   Ideally, the agent would read this kind of policy data from a structured database that a CX-owned tool populates.
+6. **Upgrade the token service.** Today Bookly mints its own tokens with a shared secret. That is
+  fine for a prototype but not something I would ship. In production I'd swap the minting for a
+  token exchange against the IdP the business already runs — the scoped token stays the same, but
+  it is issued and can be revoked by a system the enterprise already trusts. The deck covers this
+  in Appendix A.
 
 ## Layout
 
