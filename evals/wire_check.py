@@ -11,8 +11,8 @@ It asserts the things that would be expensive to discover in production:
   * the JWT never appears in the transcript sent to the model
   * routing uses constrained JSON output, not free-form parsing
   * the system prompt carries a cache breakpoint and stays a stable prefix
-  * per-turn state travels as a mid-conversation system message, not as
-    interpolation into the cached prompt
+  * per-turn state travels as a second system block after the cache
+    breakpoint, not interpolated into the cached prompt
   * tool results are returned as JSON strings, which is what the API accepts
 
     docker compose run --rm app python -m evals.wire_check
@@ -23,7 +23,14 @@ import os
 import sys
 
 import anthropic
-import httpx
+
+# The Anthropic SDK vendors httpx2 from 1.0.0 onward and plain httpx before
+# that, and it type-checks the client you hand it. Bind to whichever one the
+# installed SDK actually uses rather than assuming.
+try:  # anthropic >= 1.0
+    import httpx2 as httpx
+except ModuleNotFoundError:  # anthropic < 1.0
+    import httpx
 
 os.environ["ANTHROPIC_API_KEY"] = "sk-ant-stub-no-network-needed"
 os.environ["BOOKLY_MOCK_LLM"] = "0"

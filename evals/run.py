@@ -19,7 +19,14 @@ import yaml
 os.environ.setdefault("BOOKLY_MOCK_LLM", "1")
 
 import anthropic  # noqa: E402
-import httpx  # noqa: E402
+
+# The Anthropic SDK vendors httpx2 from 1.0.0 onward and plain httpx before
+# that, and it type-checks the client you hand it. Bind to whichever one the
+# installed SDK actually uses rather than assuming.
+try:  # anthropic >= 1.0
+    import httpx2 as httpx
+except ModuleNotFoundError:  # anthropic < 1.0
+    import httpx
 
 from app import config, db, identity, notifications, orchestrator  # noqa: E402
 from app.llm.mock import MockEngine  # noqa: E402
