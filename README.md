@@ -41,7 +41,6 @@ Press **T**, or *"Show the machinery"*, for the panel in the screenshot above.
 ## The pitch
 
 - **[Slide deck](docs/pitch.html)** — the thesis, guardrails, and the token service
-  ([`.pptx`](docs/pitch.pptx) for Google Slides or PowerPoint)
 - **[Walkthrough](docs/walkthrough.html)** — one conversation, six steps, with a
   toggle that reveals what the system did at each
 
