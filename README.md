@@ -128,11 +128,11 @@ the model cannot state it, even when a prompt commands it to. There is a test fo
 
 ---
 
-## Key architecture decisions I took 
+## Key architecture decisions
 
-### 1. The tool lists and auth tokens are the security boundary
+### 1. The tool lists and auth tokens as guardrails
 
-Before verification, `get_order_status` is not "discouraged" — it is **absent
+Before verification, `get_order_status` is not "discouraged". It is **absent
 from the tool list the model receives**. This will make it much harder for a bad 
 actor to use a tool that was never sent in the first place. 
 
@@ -146,7 +146,7 @@ def get_order_status(ctx: ToolContext, order_number: str) -> dict:
     order = db.get_order(customer_id, order_number)            # always scoped
 ```
 
-So the answer to *"what stops your bot leaking my customers' data?"* is not
+So the answer to *"what stops your bot leaking my customers' data?"* should never be
 "we prompted it not to". It is: there is no argument through which to ask. If Sarah is verified and asks for Marcus's order she gets *"I can't see that order number
 on your account"* — from the user's POV it's indistinguishable from an order that does not exist, so the
 agent cannot be used to enumerate valid order numbers either.
@@ -156,7 +156,7 @@ agent cannot be used to enumerate valid order numbers either.
 miss. With ≤3 transitions per conversation that is a good trade for a
 structural guarantee, but the real costs might add up.
 
-### 2. One dedicated model text generation and one for routing
+### 2. One dedicated model for text generation and one for routing
 
 I use `claude-sonnet-5` to generate what the customer reads.
 `claude-haiku-4-5` is used for intent routing as it's cheaper and faster, however not as smart. 
@@ -247,7 +247,7 @@ customer never repeats themselves.
 
 ## Evals
 
-I curated initial set up of test conversations to evaluate the harness. 
+I curated an initial set of test conversations to evaluate the harness. 
 After a model swap we can test if performance degrades.
 
 
@@ -296,7 +296,7 @@ thing only a live call can prove: **that nothing silently fell back.**
 
 ---
 
-## What I would change in the iterations
+## What I would address as we move towards production
 
 1. **Persist sessions to Redis** Sessions are a dict in memory
    today which is sufficient for a protoype but won't scale under load.
@@ -304,7 +304,7 @@ thing only a live call can prove: **that nothing silently fell back.**
    The agent speaks, calls a tool, then speaks again while the customer
    waits through all of it before seeing a word. Streaming the first message
    ("let me check that") while the tool runs costs no accuracy and would increase the perceived speed.
-3. **Run the eval suite against the live model in CI.** The ten conversation evals still run on the scripted engine, so
+3. **Run the eval suite against the live model in CI.** The conversation evals still run on the scripted engine, so
    they actually just prove the orchestration and say nothing about how the LLM will perform at scale.
 5. **Grow the eval set from production traffic.** The test set is made up and may not correspond to the real
   questions and inputs the users have. At Go-Live I'd collect a corpus of requests and evaluate the harness on it. 
