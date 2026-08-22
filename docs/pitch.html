@@ -193,7 +193,7 @@ ol.next span{color:var(--muted)}
         <p class="rl"><span class="role c">code</span><span>Decides which tools exist at all.</span></p></div>
     </div>
     <p class="pull">The same order is what makes it safe to ship.
-      <b>A system prompt asking the model not to do something is not a control.</b></p>
+      <b>A system prompt asking the model not to do something is not enough.</b></p>
   </section>
 
   <!-- 2 ................................................................ -->
@@ -214,16 +214,15 @@ ol.next span{color:var(--muted)}
       </tbody>
     </table>
     <div class="cols">
-      <div class="card"><span class="tag">Orchestration</span><h3>No framework — the loop is the architecture</h3>
-        <p>The tool-calling loop is fifty lines of Python, not LangChain and not the SDK&rsquo;s
+      <div class="card"><span class="tag">Orchestration</span><h3>No framework: The loop is the architecture</h3>
+        <p>The tool-calling loop is Python, not LangChain and not the SDK&rsquo;s
         runner. It recomputes the tool list on <em>every iteration</em>, so verifying mid-turn
-        widens access for the very next model call. A framework takes the tool list once per
-        turn — which would make the customer ask twice.</p></div>
-      <div class="card"><span class="tag">Memory</span><h3>Slots, not stages</h3>
-        <p>Turn history, session state, Postgres. Someone who gives email, ZIP and order number in one sentence is never walked back through three questions.</p></div>
-      <div class="card"><span class="tag">Prompts</span><h3>The prompt asks; the code enforces</h3>
-        <p>Tone, and rules worth stating twice — never assert a fact a tool did not return, never
-        guess an email. The return windows and the tool gating are <b>not</b> in here. If the model
+        widens tool-access for the very next model call.</p></div>
+      <div class="card"><span class="tag">Memory</span><h3>Great CX through slots, not stages</h3>
+        <p>Bookly uses turn history, session state and Postgres. Someone who gives email, ZIP and order number in one sentence is never walked back through three questions.</p></div>
+      <div class="card"><span class="tag">Prompts</span><h3>The prompt asks while the code enforces</h3>
+        <p>Bookly never asserts a fact a tool did not return and never
+        guesses an email. The return windows and the tool gating are <b>not</b> in the prompt. If the model
         ignored every word of it, you would get a clumsier reply, not a policy breach.</p></div>
     </div>
   </section>
@@ -234,8 +233,8 @@ ol.next span{color:var(--muted)}
       <span class="eyebrow">Guardrails</span>
       <h2>One set per step — and not one of them is a sentence in a prompt</h2>
     </div>
-    <p class="lede">Guardrails are not friction here. They are what lets me promise the things on
-      the first slide and still hand the system to a security reviewer.</p>
+    <p class="lede">Guardrails don't add any notable CX friction. They are what lets us promise the things on
+      the first slide and still lets Bookly pass a security audit.</p>
     <div class="cols">
       <div class="card">
         <span class="tag">Step 1 &middot; What you need</span>
@@ -250,8 +249,8 @@ ol.next span{color:var(--muted)}
         <span class="tag">Step 2 &middot; Who you are</span>
         <ul class="guards">
           <li>The model never compares the ZIP. It receives a boolean.</li>
-          <li>A wrong ZIP and an unknown email fail <b>identically</b> — no account-enumeration oracle.</li>
-          <li>Three attempts, then locked — and <span class="mono">verify_customer</span> disappears from the tool list.</li>
+          <li>A wrong ZIP and an unknown email fail <b>identically</b> — no account-enumeration.</li>
+          <li>Lock after three failed attempts. And <span class="mono">verify_customer</span> disappears from the tool list.</li>
           <li>The token never enters the transcript, so it cannot be echoed back out.</li>
         </ul>
       </div>
@@ -266,7 +265,8 @@ ol.next span{color:var(--muted)}
       </div>
     </div>
     <p class="pull">Every one of these is a line of Python that runs whether or not the model
-      co-operates. <b>That is the difference between a guardrail and a wish.</b></p>
+      co-operates. <b>Enforceable guardrails protecting Bookly against bad actors.</b>
+    </p>
   </section>
 
   <!-- 4 ................................................................ -->
