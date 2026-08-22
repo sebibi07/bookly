@@ -45,16 +45,16 @@ body{
 /* ---- slide ---- */
 main{flex:1;display:flex;justify-content:center;align-items:center;
   padding:clamp(18px,3.4vh,40px) clamp(16px,4vw,44px);min-height:0}
-.slide{max-width:1100px;width:100%;display:none;flex-direction:column;
+.slide{max-width:1180px;width:100%;display:none;flex-direction:column;
   gap:clamp(14px,2.2vh,24px);max-height:100%;overflow-y:auto}
 .slide.on{display:flex}
 .eyebrow{
-  font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);
+  font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);
   font-weight:600;
 }
-h1{margin:0;font-size:clamp(26px,4.1vw,45px);line-height:1.1;letter-spacing:-.025em;text-wrap:balance;font-weight:600}
-h2{margin:0;font-size:clamp(22px,3.1vw,33px);line-height:1.15;letter-spacing:-.022em;text-wrap:balance;font-weight:600}
-.lede{font-size:clamp(15px,1.55vw,19px);color:var(--muted);max-width:66ch;line-height:1.5;margin:0}
+h1{margin:0;font-size:clamp(28px,4.3vw,48px);line-height:1.1;letter-spacing:-.025em;text-wrap:balance;font-weight:600}
+h2{margin:0;font-size:clamp(24px,3.4vw,36px);line-height:1.15;letter-spacing:-.022em;text-wrap:balance;font-weight:600}
+.lede{font-size:clamp(16.5px,1.75vw,21px);color:var(--muted);max-width:66ch;line-height:1.5;margin:0}
 p{margin:0}
 
 .cols{display:grid;gap:clamp(12px,1.6vw,18px);grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
@@ -64,23 +64,23 @@ p{margin:0}
 /* Side-by-side code needs real width. Below that, stack rather than clip. */
 @media (max-width:1040px){
   .pair,.split{grid-template-columns:1fr}
-  pre{font-size:11.5px}
+  pre{font-size:12.5px}
 }
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 17px}
-.card h3{margin:0 0 7px;font-size:13.5px;letter-spacing:.01em}
-.card p{font-size:13.5px;color:var(--muted);line-height:1.5}
-.card .tag{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);
+.card h3{margin:0 0 8px;font-size:15.5px;letter-spacing:.01em}
+.card p{font-size:15px;color:var(--muted);line-height:1.5}
+.card .tag{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);
   font-weight:600;display:block;margin-bottom:8px}
 
 /* the three steps, reusing the app's chip language */
 .steps{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
 .steps.three{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.step .cust{font-size:12.5px;color:var(--ink);line-height:1.45;margin-bottom:10px;
+.step .cust{font-size:14.5px;color:var(--ink);line-height:1.45;margin-bottom:10px;
   padding-bottom:10px;border-bottom:1px solid var(--line)}
 .step .rl{display:flex;gap:8px;margin-top:9px;font-size:12px;line-height:1.42;align-items:flex-start}
 .step .rl > span:last-child{flex:1;min-width:0}
-.step .rl{color:var(--muted);font-size:11.5px}
-.role{flex:none;font-size:8px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
+.step .rl{color:var(--muted);font-size:13px}
+.role{flex:none;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
   padding:2px 6px;border-radius:20px;margin-top:1px}
 .role.m{border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft)}
 .role.c{border:1px solid var(--ok);color:var(--ok);background:var(--ok-soft)}
@@ -88,14 +88,14 @@ p{margin:0}
 /* The two 1s are the argument. Make them visibly the same 1. */
 .hi{background:var(--accent-soft);color:var(--accent);font-weight:600;
   padding:1px 4px;border-radius:3px;box-decoration-break:clone}
-.stepcol{width:12%!important;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent)}
+.stepcol{width:12%!important;font-family:ui-monospace,Menlo,monospace;font-size:13.5px;color:var(--accent)}
 td:first-child{width:34%}
-ul.guards{margin:0;padding-left:17px;display:grid;gap:7px;font-size:12.5px;color:var(--muted);line-height:1.45}
+ul.guards{margin:0;padding-left:18px;display:grid;gap:8px;font-size:14.5px;color:var(--muted);line-height:1.45}
 ul.guards b{color:var(--ink)}
 ul.guards::marker{color:var(--accent)}
 .step{border:1px solid var(--line);border-radius:10px;padding:13px 14px;background:var(--card);position:relative}
-.step b{display:block;font-size:13.5px;margin-bottom:4px}
-.step p{font-size:12.5px;color:var(--muted);line-height:1.45}
+.step b{display:block;font-size:15px;margin-bottom:4px}
+.step p{font-size:14px;color:var(--muted);line-height:1.45}
 .step .who{
   position:absolute;top:12px;right:12px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
   padding:2px 6px;border-radius:20px;border:1px solid var(--line);color:var(--muted)
@@ -103,27 +103,28 @@ ul.guards::marker{color:var(--accent)}
 .step.code .who{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
 .step.model .who{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 
-table{border-collapse:collapse;width:100%;font-size:13.5px}
+table{border-collapse:collapse;width:100%;font-size:15.5px}
 td,th{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600}
+th{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600}
 tbody tr:last-child td{border-bottom:0}
 
-.chip{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;
+.chip{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:13px;
   padding:3px 8px;border-radius:4px;border:1px solid var(--ok);color:var(--ok);background:var(--ok-soft)}
 .chip.off{border-color:var(--deny);color:var(--deny);background:var(--deny-soft);text-decoration:line-through}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 
 pre{margin:0;padding:13px 15px;background:var(--card);border:1px solid var(--line);
   border-left:2px solid var(--accent);border-radius:0 8px 8px 0;
-  font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.62;
+  font-family:ui-monospace,Menlo,monospace;font-size:13.5px;line-height:1.62;
   overflow-x:auto;white-space:pre}
-.zero{display:inline-block;margin-top:9px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;
+.zero{display:inline-block;margin-top:9px;font-family:ui-monospace,Menlo,monospace;font-size:14px;
   padding:5px 11px;border-radius:5px;border:1px solid var(--deny);color:var(--deny);background:var(--deny-soft)}
 
-.tradeoff{border-left:2px solid var(--line);padding:2px 0 2px 14px;font-size:13.5px;color:var(--muted);line-height:1.5}
+.tradeoff{border-left:2px solid var(--line);padding:2px 0 2px 14px;font-size:15px;color:var(--muted);line-height:1.5}
 .tradeoff b{color:var(--ink);font-weight:600}
-.pull{font-size:clamp(16px,1.85vw,22px);line-height:1.4;text-wrap:balance;max-width:60ch}
+.pull{font-size:clamp(18px,2.1vw,26px);line-height:1.4;text-wrap:balance;max-width:60ch}
 .pull b{color:var(--accent);font-weight:600}
+.pull{max-width:66ch}
 ol.next{margin:0;padding-left:20px;display:grid;gap:11px;font-size:14px;line-height:1.5}
 ol.next b{font-weight:600}
 ol.next span{color:var(--muted)}
@@ -344,8 +345,7 @@ SELECT order_number, carrier, tracking_no
     </div>
     <p class="pull">The three steps from my thesis do not change in production. What changes is how fast they
       feel, how much load they take, and who owns the rules. If I could only do one first:
-      <b>run it against real traffic.</b> Customers will confirm my annoyances or hand me
-      better ones.</p>
+      <b>run it against real traffic.</b> Actual customers requests will confirm my annoyances or let the real gaps surface.</p>
   </section>
 
   <!-- A ................................................................ -->
