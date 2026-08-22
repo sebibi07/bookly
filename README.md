@@ -3,7 +3,8 @@
 A conversational support agent for a fictional online bookstore. It handles customer service requests like order
 status, returns and refunds, and general policy questions.
 
-> **Bookly uses the LLM only as a speech engine. Code is used to set available actions at each step in the journey.**
+> **Find out what the customer needs. Find out who they are. Then serve them.
+> The model decides what to say — the code decides what is possible.**
 
 [![evals](https://github.com/sebibi07/bookly/actions/workflows/ci.yml/badge.svg)](https://github.com/sebibi07/bookly/actions/workflows/ci.yml)
 
@@ -50,17 +51,31 @@ Both are single HTML files — open them directly, no build step.
 
 ## My thesis regarding a good agentic customer experience
 
-> **A support agent should work out what you need, then work out who you are,
-> then serve you.** The model should decide what to
-> *say*. A scoped journey with business rules should decide what is *permitted*.
+Three things annoy me about most support bots. They ask me to log in before they
+know what I want. They make me repeat things I already said. And when they cannot
+help, they keep trying instead of getting me a person.
 
-Most conversational AI failures are not the model saying something clumsy. They
-are the model doing something outside of scope: reading
-another customer's order, approving a return outside policy, inventing a
-delivery date to fill an awkward silence. At scale, system prompts are a weak defence against
-that.
+So Bookly works in three steps: **find out what you need, find out who you are,
+then serve you.** In that order, on purpose.
 
-So in this agent, the interesting decisions are not in the prompt:
+That order is what the customer notices:
+
+- A question about the shipping policy is answered straight away. No login,
+  because the answer does not depend on who is asking.
+- Give your email, ZIP and order number in one sentence and you are not asked
+  for them again.
+- Two open orders? It asks which one. It does not guess the newest.
+- If a return is outside the window it says no, shows the arithmetic, and offers
+  a human. It does not stall.
+- After a handoff you get an email with what you asked and what was already
+  checked.
+
+The same order is what makes the agent safe to ship. The risk with an agent is
+not that it says something clumsy. It is that it *does* something: reads another
+customer's order, approves a return outside policy, promises a delivery date
+nobody can keep. A system prompt asking it not to is not a control.
+
+So in this agent, the decisions that matter are not in the prompt:
 
 | Decision | Where it lives |
 | --- | --- |
@@ -71,8 +86,8 @@ So in this agent, the interesting decisions are not in the prompt:
 | Can this return be approved? | [`app/tools/returns.py`](app/tools/returns.py) — `evaluate()` |
 | When do we hand off? | Tool results and loop budget, not vibes |
 
-What remains for the model is the part it is genuinely good at: understanding a
-messy sentence, deciding which tool fits, and writing a sentence back.
+The model still does plenty. It reads a messy sentence, picks a tool, and writes
+the reply. It just does that inside a space the code has already fenced off.
 
 ---
 
@@ -233,7 +248,7 @@ confidence, the tools that were sent to the model *and the ones that were
 withheld* (struck through in red), the token it acted under — customer,
 scopes, seconds left, how they were verified — and **every SQL statement that
 actually ran, with its row count**. Step 9 is the one to do with the panel
-open: the query reads `WHERE customer_id = 1 AND order_number = 'BK-10102'`
+open: the query reads `WHERE customer_id = 1 AND upper(order_number) = upper('BK-10102')`
 and returns `0 rows`.
 
 The smaller grey strip under each reply keeps the same summary per turn, for
@@ -276,11 +291,12 @@ PASS  policy_question_needs_no_identity   PASS  prompt_injection_is_contained
 PASS  return_outside_window_is_refused    PASS  verification_locks_out
 PASS  damaged_return_is_created           PASS  vague_opener_gets_a_question
 PASS  late_parcel_escalates               PASS  customer_asks_for_a_human
-PASS  token_scoping
-11/11 passed
+PASS  token_scoping                        PASS  backend_failure
+PASS  email_artefacts
+13/13 passed
 ```
 
-Three of these were written before the code passed them, and caught real bugs:
+Some of these were written before the code passed them, and two caught real bugs:
 an order number's digits being parsed as a ZIP code, and a turn's first message
 being silently dropped when the agent spoke before calling a tool.
 
@@ -306,9 +322,9 @@ thing only a live call can prove: **that nothing silently fell back.**
    ("let me check that") while the tool runs costs no accuracy and would increase the perceived speed.
 3. **Run the eval suite against the live model in CI.** The conversation evals still run on the scripted engine, so
    they actually just prove the orchestration and say nothing about how the LLM will perform at scale.
-5. **Grow the eval set from production traffic.** The test set is made up and may not correspond to the real
+4. **Grow the eval set from production traffic.** The test set is made up and may not correspond to the real
   questions and inputs the users have. At Go-Live I'd collect a corpus of requests and evaluate the harness on it. 
-4. **Make the policy engine a service the CX team owns.** For example updated return windows (30 days -> 60 days) or other policy changes require a code update. 
+5. **Make the policy engine a service the CX team owns.** For example updated return windows (30 days -> 60 days) or other policy changes require a code update. 
   Ideally, the agent would read this kind of policy data from a structured database that a CX-owned tool populates.
 
 ## Layout
