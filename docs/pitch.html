@@ -179,20 +179,20 @@ ol.next span{color:var(--muted)}
       <div class="step"><b>1 &middot; What you need</b>
         <p class="cust">A policy question is answered straight away. No login, because the answer
           does not depend on who is asking.</p>
-        <p class="rl"><span class="role m">model</span><span>Proposes the intent.</span></p>
+        <p class="rl"><span class="role m">model</span><span>Reads a messy sentence and proposes an intent: A constrained classification call.</span></p>
         <p class="rl"><span class="role c">code</span><span>Owns the confidence floor and the routing table.</span></p></div>
       <div class="step"><b>2 &middot; Who you are</b>
         <p class="cust">Email and ZIP once. Give all of it in one sentence and you are not asked
           for any of it again.</p>
-        <p class="rl"><span class="role m">model</span><span>Collects the two factors.</span></p>
-        <p class="rl"><span class="role c">code</span><span>Compares them and mints a scoped token.</span></p></div>
+        <p class="rl"><span class="role m">model</span><span>Collects the two factors from the conversation and submits them.</span></p>
+        <p class="rl"><span class="role c">code</span><span>Compares them, mints the scoped token, locks out after three tries.</span></p></div>
       <div class="step"><b>3 &middot; Serve you</b>
         <p class="cust">Two open orders? It asks which one. Outside the return window? A clear no,
-          with the arithmetic. It does not stall.</p>
-        <p class="rl"><span class="role m">model</span><span>Picks the tool and writes the reply.</span></p>
-        <p class="rl"><span class="role c">code</span><span>Decides which tools exist at all.</span></p></div>
+          based on rules. It does not stall.</p>
+        <p class="rl"><span class="role m">model</span><span>Chooses a tool and writes what the customer reads.</span></p>
+        <p class="rl"><span class="role c">code</span><span>Decides which tools exist, re-validates policy, forces the handoff.</span></p></div>
     </div>
-    <p class="pull">The same order is what makes it safe to ship.
+    <p class="pull">Every step is probabilistic and deterministic.
       <b>A system prompt asking the model not to do something is not enough.</b></p>
   </section>
 
@@ -305,7 +305,7 @@ SELECT order_number, carrier, tracking_no
       </div>
     </div>
     <p class="tradeoff"><b>The trade-off, and the production answer:</b> minting is hand-rolled, which is
-      not what you would ship. In production this is a token exchange against the IdP you already run —
+      not what you would ship. In production this is a token exchange against your IdP  —
       client credentials for the service leg, RFC&nbsp;8693 for the user leg. The plumbing changes; the
       property that matters does not.</p>
   </section>
@@ -342,7 +342,7 @@ SELECT order_number, carrier, tracking_no
         </ul>
       </div>
     </div>
-    <p class="pull">The three steps do not change in production. What changes is how fast they
+    <p class="pull">The three steps from my thesis do not change in production. What changes is how fast they
       feel, how much load they take, and who owns the rules. If I could only do one first:
       <b>run it against real traffic.</b> Customers will confirm my annoyances or hand me
       better ones.</p>
