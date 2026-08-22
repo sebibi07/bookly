@@ -198,7 +198,7 @@ So a handoff also emails the customer their record: what they asked,
 what the agent already checked, what happens next as well as and a completed return
 emails the RMA and label. The email is a side effect of `escalate_to_human`
 and `create_return`, **not a tool the model can choose to skip**, because
-mailing someone their own case record is a business process, not a judgement
+mailing someone their own case record is a business process and not a judgement
 call.
 
 The recipient is the same argument as `customer_id`, one level up: **it is

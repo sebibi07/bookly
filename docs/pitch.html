@@ -75,8 +75,11 @@ p{margin:0}
 /* the four steps, reusing the app's chip language */
 .steps{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
 .steps.three{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.step .cust{font-size:12.5px;color:var(--ink);line-height:1.45;margin-bottom:10px;
+  padding-bottom:10px;border-bottom:1px solid var(--line)}
 .step .rl{display:flex;gap:8px;margin-top:9px;font-size:12px;line-height:1.42;align-items:flex-start}
 .step .rl > span:last-child{flex:1;min-width:0}
+.step .rl{color:var(--muted);font-size:11.5px}
 .role{flex:none;font-size:8px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
   padding:2px 6px;border-radius:20px;margin-top:1px}
 .role.m{border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft)}
@@ -166,26 +169,31 @@ ol.next span{color:var(--muted)}
   <section class="slide on">
     <div>
       <span class="eyebrow">The thesis</span>
-      <h1>An agent does three things.<br>Each one is where a guardrail belongs.</h1>
+      <h1>Find out what you need.<br>Find out who you are. Then serve you.</h1>
     </div>
-    <p class="lede">Find out what you need. Find out who you are. Serve you. That is the whole job —
-      and it is <em>agentic</em>, which changes the stakes. A chatbot that says something wrong is
-      embarrassing. An agent that <b>does</b> something wrong is an incident: it read another
-      customer&rsquo;s order, approved a refund outside policy, promised a delivery date nobody can keep.
-      So the question is never &ldquo;will it say the right thing&rdquo;. It is <b>what is it able to do</b>.</p>
+    <p class="lede">Three things annoy me about most support bots. They ask me to log in before
+      they know what I want. They make me repeat things I already said. And when they cannot help,
+      they keep trying instead of getting me a person. <b>Bookly works in three steps, in that
+      order, on purpose.</b></p>
     <div class="steps three">
       <div class="step"><b>1 &middot; What you need</b>
-        <p class="rl"><span class="role m">model</span><span>Reads a messy sentence and <em>proposes</em> an intent — a constrained classification call.</span></p>
-        <p class="rl"><span class="role c">code</span><span>Owns the confidence floor, the routing table, and the keyword fallback if it fails.</span></p></div>
+        <p class="cust">A policy question is answered straight away. No login, because the answer
+          does not depend on who is asking.</p>
+        <p class="rl"><span class="role m">model</span><span>Proposes the intent.</span></p>
+        <p class="rl"><span class="role c">code</span><span>Owns the confidence floor and the routing table.</span></p></div>
       <div class="step"><b>2 &middot; Who you are</b>
-        <p class="rl"><span class="role m">model</span><span>Collects the two factors from the conversation and submits them.</span></p>
-        <p class="rl"><span class="role c">code</span><span>Compares them, mints the scoped token, locks out after three tries.</span></p></div>
+        <p class="cust">Email and ZIP once. Give all of it in one sentence and you are not asked
+          for any of it again.</p>
+        <p class="rl"><span class="role m">model</span><span>Collects the two factors.</span></p>
+        <p class="rl"><span class="role c">code</span><span>Compares them and mints a scoped token.</span></p></div>
       <div class="step"><b>3 &middot; Serve you</b>
-        <p class="rl"><span class="role m">model</span><span>Chooses a tool and writes what the customer reads.</span></p>
-        <p class="rl"><span class="role c">code</span><span>Decides which tools exist, re-validates policy, forces the handoff.</span></p></div>
+        <p class="cust">Two open orders? It asks which one. Outside the return window? A clear no,
+          with the arithmetic. It does not stall.</p>
+        <p class="rl"><span class="role m">model</span><span>Picks the tool and writes the reply.</span></p>
+        <p class="rl"><span class="role c">code</span><span>Decides which tools exist at all.</span></p></div>
     </div>
-    <p class="pull">Every step is probabilistic <em>and</em> deterministic. The model proposes;
-      code disposes. <b>Nothing probabilistic is ever the last word.</b></p>
+    <p class="pull">The same order is what makes it safe to ship.
+      <b>A system prompt asking the model not to do something is not a control.</b></p>
   </section>
 
   <!-- 2 ................................................................ -->
@@ -226,6 +234,8 @@ ol.next span{color:var(--muted)}
       <span class="eyebrow">Guardrails</span>
       <h2>One set per step — and not one of them is a sentence in a prompt</h2>
     </div>
+    <p class="lede">Guardrails are not friction here. They are what lets me promise the things on
+      the first slide and still hand the system to a security reviewer.</p>
     <div class="cols">
       <div class="card">
         <span class="tag">Step 1 &middot; What you need</span>
@@ -309,13 +319,18 @@ SELECT order_number, carrier, tracking_no
     <div class="cols split">
       <div>
         <ol class="next">
-          <li><b>Stream the responses.</b> <span>The biggest remaining latency win. The agent speaks,
-            calls a tool, speaks again — today the customer waits through all of it before seeing a word.</span></li>
-          <li><b>Run the evals against the live model in CI.</b> <span>Ten conversations prove the
-            orchestration; they say nothing about how the real model behaves under it.</span></li>
-          <li><b>Token exchange instead of hand-rolled minting.</b> <span>Same scoped card, issued by
-            the IdP you already run.</span></li>
-          <li><b>Policy as a service the CX team owns.</b> <span>Return windows should not require a deploy.</span></li>
+          <li><b>Persist sessions to Redis.</b> <span>Sessions are a dict in memory today. Fine for
+            a prototype, not under load.</span></li>
+          <li><b>Stream the responses.</b> <span>The biggest remaining latency win. The agent
+            speaks, calls a tool, speaks again — and today the customer waits through all of it
+            before seeing a word.</span></li>
+          <li><b>Run the evals against the live model in CI.</b> <span>They run on the scripted
+            engine, so they prove the orchestration and say nothing about how the model behaves
+            under it.</span></li>
+          <li><b>Grow the eval set from production traffic.</b> <span>My test set is made up. At
+            go-live I would collect real requests and evaluate against those.</span></li>
+          <li><b>Give the policy engine to the CX team.</b> <span>Changing a return window from 30
+            to 60 days should not need a deploy.</span></li>
         </ol>
       </div>
       <div class="card">
