@@ -1,9 +1,9 @@
 # Bookly — a customer support agent
 
-A conversational support agent for a fictional online bookstore. It handles order
+A conversational support agent for a fictional online bookstore. It handles customer service requests like order
 status, returns and refunds, and general policy questions.
 
-> **The model chooses the words. It never chooses what's possible.**
+> **Bookly uses the LLM only as a speech engine. Code is used to set available actions at each step in the journey.**
 
 [![evals](https://github.com/sebibi07/bookly/actions/workflows/ci.yml/badge.svg)](https://github.com/sebibi07/bookly/actions/workflows/ci.yml)
 
@@ -13,7 +13,7 @@ belonging to someone else, and the query returns zero rows.](docs/img/agent-mach
 *Above: a verified customer asks for an order that belongs to a different customer.
 The agent did call the tool — the query ran with `customer_id = 1` from the token,
 and came back empty. Note the tools struck through in red: those were never sent to
-the model at all.*
+the model.*
 
 ## Run it
 
@@ -48,17 +48,17 @@ Both are single HTML files — open them directly, no build step.
 
 ---
 
-## The thesis
+## My thesis regarding a good agentic customer experience
 
 > **A support agent should work out what you need, then work out who you are,
-> then serve you — and know when to stop.** The model should decide what to
-> *say*. It should never be the thing deciding what is *permitted*.
+> then serve you.** The model should decide what to
+> *say*. A scoped journey with business rules should decide what is *permitted*.
 
 Most conversational AI failures are not the model saying something clumsy. They
-are the model doing something it should never have been able to do: reading
+are the model doing something outside of scope: reading
 another customer's order, approving a return outside policy, inventing a
-delivery date to fill an awkward silence. Prompts are a weak defence against
-that, because a prompt is a request and every request can be argued with.
+delivery date to fill an awkward silence. At scale, system prompts are a weak defence against
+that.
 
 So in this agent, the interesting decisions are not in the prompt:
 
@@ -83,27 +83,27 @@ customer message
       │
       ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. NEED    classify intent  (constrained JSON, own call)     │
-│            confidence < 0.6 → keep the intent already in     │
-│            play, or route to "unclear" and ask a question    │
+│ 1. NEED    classify intent  (constrained JSON, own call)    │
+│            confidence < 0.6 → keep the intent already in    │
+│            play, or route to "unclear" and ask a question   │
 └─────────────────────────────────────────────────────────────┘
       ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 2. KNOW    tools_for(intent, verified, locked)               │
-│            builds the tool list for THIS turn                │
-│            unverified + order_status → verify_customer only  │
-│            policy_question            → no identity at all   │
+│ 2. KNOW    tools_for(intent, verified, locked)              │
+│            builds the tool list for THIS turn               │
+│            unverified + order_status → verify_customer only │
+│            policy_question            → no identity at all  │
 └─────────────────────────────────────────────────────────────┘
       ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 3. SERVE   hand-written tool loop (max 6 iterations)         │
-│            ├─ Messages API, tools = only what step 2 allowed │
-│            ├─ execute → JWT authorises → Postgres            │
-│            └─ recompute the tool list and go again           │
+│ 3. SERVE   hand-written tool loop (max 6 iterations)        │
+│            ├─ Messages API, tools = only what step 2 allowed│
+│            ├─ execute → JWT authorises → Postgres           │
+│            └─ recompute the tool list and go again          │
 └─────────────────────────────────────────────────────────────┘
       ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 4. RESOLVE answer, or escalate with the full working         │
+│ 4. RESOLVE answer, or escalate with the full working        │
 └─────────────────────────────────────────────────────────────┘
       ▼
    reply + one structured trace line per turn
@@ -115,41 +115,27 @@ customer is not asked to repeat what they wanted.
 
 ### Memory
 
-Three tiers, on purpose:
+Memory consists of three tiers:
 
 - **Turn** — the Anthropic `messages` array, including tool results.
 - **Session** — [`app/state.py`](app/state.py): auth state, sticky intent,
-  trace. Slots, not stages: someone who supplies their email, ZIP and order
-  number in one sentence is not walked through three questions.
+  trace. Slots instead of stages: someone who supplies their email, ZIP and order
+  number in one sentence should not re-repeat them.
 - **Durable** — Postgres. Returns are real writes.
 
-The JWT lives in session state and is **never** placed in the message array, so
-the model cannot echo it back out. There is a test for that.
+Important: The JWT lives in session state and is **never** placed in the message array, so
+the model cannot state it, even when a prompt commands it to. There is a test for that in the evals.
 
 ---
 
 ## Five decisions I took 
 
-### 1. Two model tiers, because they are not the same job
+### 1. Two model tiers, one perfect for each job
 
-The agent writes what the customer reads, so it runs on `claude-sonnet-5`.
-Intent routing picks one of four labels against a fixed schema and has its own
-eval set — which is exactly the shape of a task you can safely put on the
-cheapest, fastest model, so it runs on `claude-haiku-4-5`.
+I use `claude-sonnet-5` to generate what the customer reads.
+`claude-haiku-4-5` is used for intent routing as it's cheaper and faster, however not as smart. 
+It is used for for picking one of four labels against a fixed schema. There are a few trade-offs I can live with because the schema is fixed and an eval-set makes sure a re-deploy won't break it.
 
-Running both on one frontier model meant every turn paid full latency twice:
-once to answer a four-way multiple-choice question, once to write two
-sentences. Extended thinking is also off by default — in a chat widget it is
-latency you can see, and the hard decisions were already made in code before
-the model was called.
-
-The request shape is chosen **per model**, because this is not cosmetic:
-`claude-haiku-4-5` rejects `output_config.effort` and adaptive thinking with a
-400, while the 4.6+ family expects them. One guard is worth naming — Opus 5 is
-never sent `thinking: disabled` even when thinking is off globally, because it
-can then write tool calls into visible text where they silently never run. Low
-effort is the supported way to make it cheap. `wire_check.py` asserts all of
-this without a key.
 
 Tune it in `.env`:
 
@@ -161,16 +147,15 @@ Tune it in `.env`:
 
 **Trade-off:** a smaller model is worse at recovering from a genuinely strange
 message. That is survivable *here* specifically because the model is not
-carrying the load — policy, identity and tool exposure are all decided in code,
+carrying any of the load: policy, identity and tool exposure are enforced via code,
 so a weaker model produces a clumsier sentence rather than a wrong outcome.
-Tiering down is only safe in an architecture where the model was never the
-thing being trusted.
+
 
 ### 2. The tool list is the security boundary, not the prompt
 
 Before verification, `get_order_status` is not "discouraged" — it is **absent
-from the tool list the model receives**. You cannot jailbreak your way to a
-tool that was never sent.
+from the tool list the model receives**. This will make it much harder for a bad 
+actor to use a tool that was never sent in the first place. 
 
 Underneath, the same idea again: **no tool accepts a `customer_id`.** It is not
 in any schema the model sees. Every scoped read derives the customer from the
@@ -209,7 +194,7 @@ damage is Bookly's fault. Consequences:
 deployment this belongs behind a rules service the CX team owns — but it should
 still be a table somewhere, not a paragraph the model has to interpret.
 
-### 4. The customer leaves with an artefact
+### 4. Customer experience: The customer leaves with an artefact
 
 A reference number read aloud in a chat window is forgotten by the time the tab
 closes. So a handoff also emails the customer their record — what they asked,
