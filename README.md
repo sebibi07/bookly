@@ -82,29 +82,29 @@ messy sentence, deciding which tool fits, and writing a sentence back.
 customer message
       │
       ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 1. NEED    classify intent  (constrained JSON, own call)    │
-│            confidence < 0.6 → keep the intent already in    │
-│            play, or route to "unclear" and ask a question   │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ 1. NEED    classify intent  (constrained JSON, own call)     │
+│            confidence < 0.6 → keep the intent already in     │
+│            play, or route to "unclear" and ask a question    │
+└──────────────────────────────────────────────────────────────┘
       ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 2. KNOW    tools_for(intent, verified, locked)              │
-│            builds the tool list for THIS turn               │
-│            unverified + order_status → verify_customer only │
-│            policy_question            → no identity at all  │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ 2. KNOW    tools_for(intent, verified, locked)               │
+│            builds the tool list for THIS turn                │
+│            unverified + order_status → verify_customer only  │
+│            policy_question            → no identity at all   │
+└──────────────────────────────────────────────────────────────┘
       ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 3. SERVE   hand-written tool loop (max 6 iterations)        │
-│            ├─ Messages API, tools = only what step 2 allowed│
-│            ├─ execute → JWT authorises → Postgres           │
-│            └─ recompute the tool list and go again          │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ 3. SERVE   hand-written tool loop (max 6 iterations)         │
+│            ├─ Messages API, tools = only what step 2 allowed │
+│            ├─ execute → JWT authorises → Postgres            │
+│            └─ recompute the tool list and go again           │
+└──────────────────────────────────────────────────────────────┘
       ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 4. RESOLVE answer, or escalate with the full working        │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ 4. RESOLVE answer, or escalate with the full working         │
+└──────────────────────────────────────────────────────────────┘
       ▼
    reply + one structured trace line per turn
 ```
@@ -128,30 +128,9 @@ the model cannot state it, even when a prompt commands it to. There is a test fo
 
 ---
 
-## Five decisions I took 
+## Key architecture decisions I took 
 
-### 1. Two model tiers, one perfect for each job
-
-I use `claude-sonnet-5` to generate what the customer reads.
-`claude-haiku-4-5` is used for intent routing as it's cheaper and faster, however not as smart. 
-It is used for for picking one of four labels against a fixed schema. There are a few trade-offs I can live with because the schema is fixed and an eval-set makes sure a re-deploy won't break it.
-
-
-Tune it in `.env`:
-
-| | Agent | Router | Feel |
-| --- | --- | --- | --- |
-| Fastest | `claude-haiku-4-5` | `claude-haiku-4-5` | snappy; plainer prose |
-| **Default** | `claude-sonnet-5` | `claude-haiku-4-5` | fast, reads well |
-| Most capable | `claude-opus-5` | `claude-haiku-4-5` | best judgement, slowest |
-
-**Trade-off:** a smaller model is worse at recovering from a genuinely strange
-message. That is survivable *here* specifically because the model is not
-carrying any of the load: policy, identity and tool exposure are enforced via code,
-so a weaker model produces a clumsier sentence rather than a wrong outcome.
-
-
-### 2. The tool list is the security boundary, not the prompt
+### 1. The tool lists and auth tokens are the security boundary
 
 Before verification, `get_order_status` is not "discouraged" — it is **absent
 from the tool list the model receives**. This will make it much harder for a bad 
@@ -168,37 +147,40 @@ def get_order_status(ctx: ToolContext, order_number: str) -> dict:
 ```
 
 So the answer to *"what stops your bot leaking my customers' data?"* is not
-"we prompted it not to". It is: there is no argument through which to ask. A
-verified Sarah asking for Marcus's order gets *"I can't see that order number
-on your account"* — indistinguishable from an order that does not exist, so the
+"we prompted it not to". It is: there is no argument through which to ask. If Sarah is verified and asks for Marcus's order she gets *"I can't see that order number
+on your account"* — from the user's POV it's indistinguishable from an order that does not exist, so the
 agent cannot be used to enumerate valid order numbers either.
 
 **Trade-off:** the tool list changes between states, and `tools` renders
 *before* `system` in the cached prefix — so each state transition costs a cache
 miss. With ≤3 transitions per conversation that is a good trade for a
-structural guarantee, but it is a real cost and worth naming.
+structural guarantee, but the real costs might add up.
 
-### 3. Policy is Python-code, not prose
+### 2. One dedicated model text generation and one for routing
 
-Return windows live in `evaluate()` — 30 days normally, 90 for damage, because
-damage is Bookly's fault. Consequences:
+I use `claude-sonnet-5` to generate what the customer reads.
+`claude-haiku-4-5` is used for intent routing as it's cheaper and faster, however not as smart. 
+It picks one of four labels against a fixed schema. There are a few trade-offs I can live with because the schema is fixed and an eval-set makes sure a re-deploy won't break it.
 
-- The same question asked twice gets the same answer.
-- A customer cannot argue a function into extending a window.
-- `create_return` **re-runs** `evaluate()` rather than trusting that the model
-  called `check_return_eligibility` first and read it correctly. The write path
-  validates its own preconditions.
-- Refusals are legible: the tool returns *why*, and the agent explains it.
 
-**Trade-off:** every policy change is a deploy, not a prompt edit. For a real
-deployment this belongs behind a rules service the CX team owns — but it should
-still be a table somewhere, not a paragraph the model has to interpret.
+Tune it in `.env`:
 
-### 4. Customer experience: The customer leaves with an artefact
+| | Agent | Router | Feel |
+| --- | --- | --- | --- |
+| Fastest | `claude-haiku-4-5` | `claude-haiku-4-5` | snappy; plainer prose |
+| **Default** | `claude-sonnet-5` | `claude-haiku-4-5` | fast, reads well |
+| Most capable | `claude-opus-5` | `claude-haiku-4-5` | best judgement, slowest |
 
-A reference number read aloud in a chat window is forgotten by the time the tab
-closes. So a handoff also emails the customer their record — what they asked,
-what the agent already checked, what happens next — and a completed return
+**Trade-off:** a smaller model is worse at recovering from a genuinely strange
+message. That is survivable *here* specifically because the model is not
+carrying any of the load: policy, identity and tool exposure are enforced via code,
+so a weaker model produces a clumsier sentence rather than a wrong outcome.
+
+### 3. Customer experience: The customer leaves with an artefact
+
+I personally wouldn't remember a reference number posted in a chat window after 30 seconds. 
+So a handoff also emails the customer their record: what they asked,
+what the agent already checked, what happens next as well as and a completed return
 emails the RMA and label. The email is a side effect of `escalate_to_human`
 and `create_return`, **not a tool the model can choose to skip**, because
 mailing someone their own case record is a business process, not a judgement
@@ -224,31 +206,6 @@ With no SMTP configured, mail is written to `outbox/` as real `.eml` files you
 can open, and served at `/api/outbox`. Set `BOOKLY_DEMO_EMAIL` to route every
 message to your own inbox, the way a staging environment does — the body still
 names the account it was really for.
-
-### 5. The demo never fails
-
-With no key, the agent runs a deterministic scripted engine implementing the
-same interface. **Everything else is real**: routing, tool exposure, JWT
-scoping, the policy engine, escalation, Postgres. Only the token generator is
-swapped, and you can swap it back mid-demo from the header.
-
-The same instinct covers the model failing *during* a conversation. The two
-failure modes degrade differently, on purpose:
-
-- **Generation dies** → the customer gets a human and a reference number, with
-  every tool result already gathered attached. Not a stack trace.
-- **The router dies** → the conversation carries on and the intent already in
-  play is held. Tool gating never depended on the router being alive, so
-  verification and scoping still work.
-
-Both are asserted in `probe_backend_failure()`.
-
-That is not a shortcut — it is how the evals stay honest. Asserting "the agent
-did not expose `create_return`" is a fact about orchestration, and it should
-not go red because a model sampled differently that morning. It is also why
-this repo runs on a laptop with no secrets.
-
-Force it either way with `BOOKLY_MOCK_LLM=1` / `0`.
 
 ---
 
@@ -290,13 +247,14 @@ customer never repeats themselves.
 
 ## Evals
 
-Deflection rate is a vanity metric if the contained conversations were bad ones.
-These assert the properties that survive a model swap.
+I curated initial set up of test conversations to evaluate the harness. 
+After a model swap we can test if performance degrades.
+
 
 Run them with `./run.sh evals` / `wire` / `smoke`, or under Docker with
 `docker compose run --rm app python -m evals.run`. The first two run on every
 push — see [`.github/workflows/ci.yml`](.github/workflows/ci.yml); they need no
-API key, which is the point.
+API key.
 
 [`evals/cases.yaml`](evals/cases.yaml) scripts whole conversations and asserts
 on the trace — including `tools_not_exposed`, which checks a tool was never
@@ -338,41 +296,20 @@ thing only a live call can prove: **that nothing silently fell back.**
 
 ---
 
-## What I would change first
+## What I would change in the iterations
 
-1. **Stream the responses.** This is now the biggest remaining latency win.
-   The agent speaks, calls a tool, then speaks again — and today the customer
+1. **Persist sessions to Redis** Sessions are a dict in memory
+   today which is sufficient for a protoype but won't scale under load.
+2. **Stream the responses.** This is the biggest remaining latency win.
+   The agent speaks, calls a tool, then speaks again while the customer
    waits through all of it before seeing a word. Streaming the first message
-   ("let me check that") while the tool runs costs no accuracy and would do
-   more for perceived speed than any further model change.
-2. **Measure it properly.** Every turn already records `llm_ms` and
-   `total_ms`; nothing yet aggregates them into a p50/p95 anyone can act on.
-   Latency is currently a matter of opinion, which is how it stays bad.
-3. **Run the eval suite against the live model in CI.** `smoke.py` covers one
-   happy path. The ten conversation evals still run on the scripted engine, so
-   they prove the orchestration and say nothing about how the real model
-   behaves under them. Running both, nightly, is what turns this from a demo
-   into something you would let near customers.
-4. **Make the policy engine a service the CX team owns.** Return windows should
-   not require a deploy.
-5. **Persist sessions to Redis** and give tokens a revocation list. Sessions are
-   a dict in memory today; that is honest for a demo and wrong for production.
-6. **Grow the eval set from production traffic.** Ten hand-written conversations
-   prove the architecture holds. They do not tell you what real customers type.
-   The first week of transcripts is worth more than any of them.
-
-## Assumptions
-
-- **Email + shipping ZIP** as the two factors. A bookstore has no plausible
-  reason to hold a date of birth, and an order number alone is a bearer token —
-  anyone who has seen the confirmation email has it.
-- **A ZIP mismatch and an unknown email return the identical failure**, so the
-  agent cannot be used to test whether an address has an account.
-- Keyword search over five help-centre rows stands in for retrieval. A vector
-  index is the production answer but would not change the argument: policy
-  answers are **retrieved and cited**, never recalled from weights.
-- Seed dates are relative to `CURRENT_DATE`, so the demo cannot go stale.
-- `Reset demo` reseeds the database, because returns are real writes.
+   ("let me check that") while the tool runs costs no accuracy and would increase the perceived speed.
+3. **Run the eval suite against the live model in CI.** The ten conversation evals still run on the scripted engine, so
+   they actually just prove the orchestration and say nothing about how the LLM will perform at scale.
+5. **Grow the eval set from production traffic.** The test set is made up and may not correspond to the real
+  questions and inputs the users have. At Go-Live I'd collect a corpus of requests and evaluate the harness on it. 
+4. **Make the policy engine a service the CX team owns.** For example updated return windows (30 days -> 60 days) or other policy changes require a code update. 
+  Ideally, the agent would read this kind of policy data from a structured database that a CX-owned tool populates.
 
 ## Layout
 
