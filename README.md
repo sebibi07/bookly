@@ -117,7 +117,9 @@ customer message
 └──────────────────────────────────────────────────────────────┘
       ▼
 ┌──────────────────────────────────────────────────────────────┐
-│ 4. RESOLVE answer, or escalate with the full working         │
+│ 4. RESOLVE answer, or hand off: the human gets the working,  │
+│            the customer gets it in writing. Code forces the  │
+│            handoff on refusal, budget or backend failure     │
 └──────────────────────────────────────────────────────────────┘
       ▼
    reply + one structured trace line per turn
@@ -328,8 +330,7 @@ thing only a live call can prove: **that nothing silently fell back.**
 6. **Upgrade the token service.** Today Bookly mints its own tokens with a shared secret. That is
   fine for a prototype but not something I would ship. In production I'd swap the minting for a
   token exchange against the IdP the business already runs — the scoped token stays the same, but
-  it is issued and can be revoked by a system the enterprise already trusts. The deck covers this
-  in Appendix A.
+  it is issued and can be revoked by a system the enterprise already trusts.
 
 ## Layout
 
