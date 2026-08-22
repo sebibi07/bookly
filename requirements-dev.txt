@@ -1,0 +1,4 @@
+# Only needed for the no-Docker path (./run.sh). Ships a PostgreSQL binary as
+# a wheel, so there is nothing to install system-wide and nothing left running.
+# macOS and Linux; on Windows use the Docker path.
+pgserver>=0.1.4

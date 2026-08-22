@@ -1,0 +1,421 @@
+<title>Bookly Agent Pitch</title>
+<style>
+:root{
+  /* Lifted from the app's stylesheet so the deck and the demo read as one thing. */
+  --paper:#faf8f4; --card:#ffffff; --ink:#1d1b18; --muted:#6f6a61; --line:#e5dfd4;
+  --accent:#8a4b2a; --accent-soft:#f3e7de;
+  --ok:#1f6f43; --ok-soft:#e3f2e9; --deny:#9c3025; --deny-soft:#fbe9e7;
+  --user:#2f2b26;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#171512; --card:#201d19; --ink:#f0ece5; --muted:#9d968a; --line:#332e27;
+    --accent:#d98d63; --accent-soft:#2e211a;
+    --ok:#63b98c; --ok-soft:#16281e; --deny:#e08573; --deny-soft:#2b1714;
+    --user:#3c372f;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#171512; --card:#201d19; --ink:#f0ece5; --muted:#9d968a; --line:#332e27;
+  --accent:#d98d63; --accent-soft:#2e211a;
+  --ok:#63b98c; --ok-soft:#16281e; --deny:#e08573; --deny-soft:#2b1714;
+  --user:#3c372f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--paper); color:var(--ink);
+  font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+  display:flex; flex-direction:column; min-height:100dvh;
+}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* ---- chrome ---- */
+.bar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:13px clamp(16px,3vw,30px);border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:29px;height:29px;border-radius:8px;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-weight:700;font-size:15px}
+.brand b{font-size:15px;display:block;line-height:1.2}
+.brand span{font-size:11.5px;color:var(--muted)}
+.count{font-size:11.5px;color:var(--muted);letter-spacing:.06em}
+
+/* ---- slide ---- */
+main{flex:1;display:flex;justify-content:center;align-items:center;
+  padding:clamp(18px,3.4vh,40px) clamp(16px,4vw,44px);min-height:0}
+.slide{max-width:1100px;width:100%;display:none;flex-direction:column;
+  gap:clamp(14px,2.2vh,24px);max-height:100%;overflow-y:auto}
+.slide.on{display:flex}
+.eyebrow{
+  font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);
+  font-weight:600;
+}
+h1{margin:0;font-size:clamp(26px,4.1vw,45px);line-height:1.1;letter-spacing:-.025em;text-wrap:balance;font-weight:600}
+h2{margin:0;font-size:clamp(22px,3.1vw,33px);line-height:1.15;letter-spacing:-.022em;text-wrap:balance;font-weight:600}
+.lede{font-size:clamp(15px,1.55vw,19px);color:var(--muted);max-width:66ch;line-height:1.5;margin:0}
+p{margin:0}
+
+.cols{display:grid;gap:clamp(12px,1.6vw,18px);grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.cols > *{min-width:0}
+.pair{grid-template-columns:1fr 1fr}
+.split{grid-template-columns:1.15fr .85fr}
+/* Side-by-side code needs real width. Below that, stack rather than clip. */
+@media (max-width:1040px){
+  .pair,.split{grid-template-columns:1fr}
+  pre{font-size:11.5px}
+}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 17px}
+.card h3{margin:0 0 7px;font-size:13.5px;letter-spacing:.01em}
+.card p{font-size:13.5px;color:var(--muted);line-height:1.5}
+.card .tag{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);
+  font-weight:600;display:block;margin-bottom:8px}
+
+/* the four steps, reusing the app's chip language */
+.steps{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.steps.three{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.step .rl{display:flex;gap:8px;margin-top:9px;font-size:12px;line-height:1.42;align-items:flex-start}
+.step .rl > span:last-child{flex:1;min-width:0}
+.role{flex:none;font-size:8px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
+  padding:2px 6px;border-radius:20px;margin-top:1px}
+.role.m{border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft)}
+.role.c{border:1px solid var(--ok);color:var(--ok);background:var(--ok-soft)}
+.cmt{color:var(--muted)}
+/* The two 1s are the argument. Make them visibly the same 1. */
+.hi{background:var(--accent-soft);color:var(--accent);font-weight:600;
+  padding:1px 4px;border-radius:3px;box-decoration-break:clone}
+.stepcol{width:12%!important;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent)}
+td:first-child{width:34%}
+ul.guards{margin:0;padding-left:17px;display:grid;gap:7px;font-size:12.5px;color:var(--muted);line-height:1.45}
+ul.guards b{color:var(--ink)}
+ul.guards::marker{color:var(--accent)}
+.step{border:1px solid var(--line);border-radius:10px;padding:13px 14px;background:var(--card);position:relative}
+.step b{display:block;font-size:13.5px;margin-bottom:4px}
+.step p{font-size:12.5px;color:var(--muted);line-height:1.45}
+.step .who{
+  position:absolute;top:12px;right:12px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 6px;border-radius:20px;border:1px solid var(--line);color:var(--muted)
+}
+.step.code .who{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.step.model .who{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+td,th{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tbody tr:last-child td{border-bottom:0}
+
+.chip{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;
+  padding:3px 8px;border-radius:4px;border:1px solid var(--ok);color:var(--ok);background:var(--ok-soft)}
+.chip.off{border-color:var(--deny);color:var(--deny);background:var(--deny-soft);text-decoration:line-through}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+
+pre{margin:0;padding:13px 15px;background:var(--card);border:1px solid var(--line);
+  border-left:2px solid var(--accent);border-radius:0 8px 8px 0;
+  font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.62;
+  overflow-x:auto;white-space:pre}
+.zero{display:inline-block;margin-top:9px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;
+  padding:5px 11px;border-radius:5px;border:1px solid var(--deny);color:var(--deny);background:var(--deny-soft)}
+
+.tradeoff{border-left:2px solid var(--line);padding:2px 0 2px 14px;font-size:13.5px;color:var(--muted);line-height:1.5}
+.tradeoff b{color:var(--ink);font-weight:600}
+.pull{font-size:clamp(16px,1.85vw,22px);line-height:1.4;text-wrap:balance;max-width:60ch}
+.pull b{color:var(--accent);font-weight:600}
+ol.next{margin:0;padding-left:20px;display:grid;gap:11px;font-size:14px;line-height:1.5}
+ol.next b{font-weight:600}
+ol.next span{color:var(--muted)}
+
+/* ---- nav ---- */
+.nav{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:11px clamp(16px,3vw,30px);border-top:1px solid var(--line)}
+.dots{display:flex;gap:6px}
+.dot{width:24px;height:24px;border:1px solid var(--line);background:transparent;border-radius:6px;
+  cursor:pointer;font:inherit;font-size:11px;color:var(--muted);padding:0}
+.dot:hover{border-color:var(--accent);color:var(--accent)}
+.dot[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.dot:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;
+  padding:6px 13px;font:inherit;font-size:13px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.35;cursor:default}
+.hint{font-size:10.5px;color:var(--muted);letter-spacing:.05em}
+@media (max-width:700px){.hint{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- print to PDF: one slide per page ---- */
+@media print{
+  @page{size:landscape;margin:14mm}
+  main{align-items:flex-start}
+  .bar,.nav{display:none}
+  .slide{display:flex!important;page-break-after:always;max-width:none;gap:16px}
+  .slide:last-child{page-break-after:auto}
+  body{background:#fff}
+}
+</style>
+
+<header class="bar">
+  <div class="brand">
+    <span class="mark">B</span>
+    <div><b>Bookly support agent</b><span>architecture &amp; decisions</span></div>
+  </div>
+  <span class="count" id="count"></span>
+</header>
+
+<main>
+  <!-- 1 ................................................................ -->
+  <section class="slide on">
+    <div>
+      <span class="eyebrow">The thesis</span>
+      <h1>An agent does three things.<br>Each one is where a guardrail belongs.</h1>
+    </div>
+    <p class="lede">Find out what you need. Find out who you are. Serve you. That is the whole job —
+      and it is <em>agentic</em>, which changes the stakes. A chatbot that says something wrong is
+      embarrassing. An agent that <b>does</b> something wrong is an incident: it read another
+      customer&rsquo;s order, approved a refund outside policy, promised a delivery date nobody can keep.
+      So the question is never &ldquo;will it say the right thing&rdquo;. It is <b>what is it able to do</b>.</p>
+    <div class="steps three">
+      <div class="step"><b>1 &middot; What you need</b>
+        <p class="rl"><span class="role m">model</span><span>Reads a messy sentence and <em>proposes</em> an intent — a constrained classification call.</span></p>
+        <p class="rl"><span class="role c">code</span><span>Owns the confidence floor, the routing table, and the keyword fallback if it fails.</span></p></div>
+      <div class="step"><b>2 &middot; Who you are</b>
+        <p class="rl"><span class="role m">model</span><span>Collects the two factors from the conversation and submits them.</span></p>
+        <p class="rl"><span class="role c">code</span><span>Compares them, mints the scoped token, locks out after three tries.</span></p></div>
+      <div class="step"><b>3 &middot; Serve you</b>
+        <p class="rl"><span class="role m">model</span><span>Chooses a tool and writes what the customer reads.</span></p>
+        <p class="rl"><span class="role c">code</span><span>Decides which tools exist, re-validates policy, forces the handoff.</span></p></div>
+    </div>
+    <p class="pull">Every step is probabilistic <em>and</em> deterministic. The model proposes;
+      code disposes. <b>Nothing probabilistic is ever the last word.</b></p>
+  </section>
+
+  <!-- 2 ................................................................ -->
+  <section class="slide">
+    <div>
+      <span class="eyebrow">Architecture</span>
+      <h2>Where each decision actually gets made</h2>
+    </div>
+    <table>
+      <thead><tr><th>Decision</th><th>Step</th><th>Decided by</th></tr></thead>
+      <tbody>
+        <tr><td>Which intent is this?</td><td class="stepcol">1</td><td>A constrained call on a cheaper model</td></tr>
+        <tr><td>Does this need identity?</td><td class="stepcol">1&rarr;2</td><td>A dict in <span class="mono">tools/__init__.py</span></td></tr>
+        <tr><td>Is this person who they say?</td><td class="stepcol">2</td><td><span class="mono">hmac.compare_digest</span> against Postgres</td></tr>
+        <tr><td>Whose data can be read?</td><td class="stepcol">2&rarr;3</td><td>The <span class="mono">sub</span> claim of a signed token</td></tr>
+        <tr><td>Can this return be approved?</td><td class="stepcol">3</td><td>A pure function — 30 days, 90 if damaged</td></tr>
+        <tr><td>When do we stop and fetch a human?</td><td class="stepcol">3</td><td>Tool results and a loop budget</td></tr>
+      </tbody>
+    </table>
+    <div class="cols">
+      <div class="card"><span class="tag">Orchestration</span><h3>No framework — the loop is the architecture</h3>
+        <p>The tool-calling loop is fifty lines of Python, not LangChain and not the SDK&rsquo;s
+        runner. It recomputes the tool list on <em>every iteration</em>, so verifying mid-turn
+        widens access for the very next model call. A framework takes the tool list once per
+        turn — which would make the customer ask twice.</p></div>
+      <div class="card"><span class="tag">Memory</span><h3>Slots, not stages</h3>
+        <p>Turn history, session state, Postgres. Someone who gives email, ZIP and order number in one sentence is never walked back through three questions.</p></div>
+      <div class="card"><span class="tag">Prompts</span><h3>The prompt asks; the code enforces</h3>
+        <p>Tone, and rules worth stating twice — never assert a fact a tool did not return, never
+        guess an email. The return windows and the tool gating are <b>not</b> in here. If the model
+        ignored every word of it, you would get a clumsier reply, not a policy breach.</p></div>
+    </div>
+  </section>
+
+  <!-- 3 ................................................................ -->
+  <section class="slide">
+    <div>
+      <span class="eyebrow">Guardrails</span>
+      <h2>One set per step — and not one of them is a sentence in a prompt</h2>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <span class="tag">Step 1 &middot; What you need</span>
+        <ul class="guards">
+          <li>Routing is its own constrained call, not a side effect of generation.</li>
+          <li>Confidence under <span class="mono">0.6</span> asks a clarifying question instead of guessing.</li>
+          <li>While the intent is unclear, <b>no customer-data tool is sent at all</b>.</li>
+          <li>If the router fails, it falls back to keywords — never to &ldquo;unclear&rdquo;, which would silently disarm the agent.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">Step 2 &middot; Who you are</span>
+        <ul class="guards">
+          <li>The model never compares the ZIP. It receives a boolean.</li>
+          <li>A wrong ZIP and an unknown email fail <b>identically</b> — no account-enumeration oracle.</li>
+          <li>Three attempts, then locked — and <span class="mono">verify_customer</span> disappears from the tool list.</li>
+          <li>The token never enters the transcript, so it cannot be echoed back out.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">Step 3 &middot; Serve you</span>
+        <ul class="guards">
+          <li>Tools are filtered by state <b>before</b> the model sees them.</li>
+          <li>Return windows are a pure function; the write path re-validates rather than trusting the model.</li>
+          <li>No fact may be stated that a tool did not return.</li>
+          <li>Loop budget spent, or a tool says human-review — hand off, with the working attached.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="pull">Every one of these is a line of Python that runs whether or not the model
+      co-operates. <b>That is the difference between a guardrail and a wish.</b></p>
+  </section>
+
+  <!-- 4 ................................................................ -->
+  <section class="slide">
+    <div>
+      <span class="eyebrow">The headline guardrail</span>
+      <h2>The token service: a key card cut for one customer</h2>
+    </div>
+    <p class="lede">Show ID at the desk and you get a key card. It opens <b>your</b> room — not the one
+      next door, not the manager&rsquo;s office — and it stops working when you check out. That card is
+      what step 2 issues, and every action in step 3 has to use it. The <span class="mono">sub</span> claim is the room
+      number — <b>customer 1 is Sarah</b>.</p>
+    <div class="cols pair">
+      <div>
+        <pre>{ "iss": "bookly-identity",
+  <span class="hi">"sub": "1"</span>,          <span class="cmt">&lt;- customers.id = Sarah</span>
+  "scope": ["orders:read",
+            "returns:write",
+            "notifications:send"],
+  "amr":  ["email", "shipping_zip"],
+  "exp":  iat + 600 }  <span class="cmt">&lt;- about one conversation</span></pre>
+        <p class="tradeoff" style="margin-top:12px"><b>And no tool accepts a customer id.</b> It is not a
+          parameter in any schema the model receives. Every scoped read derives it from
+          <span class="mono">sub</span>, server-side. There is no argument through which to ask for
+          someone else.</p>
+      </div>
+      <div>
+        <pre>-- Sarah asks for Marcus&rsquo;s order
+SELECT order_number, carrier, tracking_no
+  FROM orders
+ WHERE <span class="hi">customer_id = 1</span>   <span class="cmt">&lt;- the same 1</span>
+   AND upper(order_number) = upper('BK-10102')</pre>
+        <span class="zero">0 rows &middot; 2.5 ms</span>
+        <p class="pull" style="margin-top:14px;font-size:17px">The polite refusal is the model behaving
+          well. <b>The empty result is the part that still holds when it doesn&rsquo;t.</b></p>
+      </div>
+    </div>
+    <p class="tradeoff"><b>The trade-off, and the production answer:</b> minting is hand-rolled, which is
+      not what you would ship. In production this is a token exchange against the IdP you already run —
+      client credentials for the service leg, RFC&nbsp;8693 for the user leg. The plumbing changes; the
+      property that matters does not.</p>
+  </section>
+
+  <!-- 5 ................................................................ -->
+  <section class="slide">
+    <div>
+      <span class="eyebrow">What I&rsquo;d change first</span>
+      <h2>And what the evals already caught</h2>
+    </div>
+    <div class="cols split">
+      <div>
+        <ol class="next">
+          <li><b>Stream the responses.</b> <span>The biggest remaining latency win. The agent speaks,
+            calls a tool, speaks again — today the customer waits through all of it before seeing a word.</span></li>
+          <li><b>Run the evals against the live model in CI.</b> <span>Ten conversations prove the
+            orchestration; they say nothing about how the real model behaves under it.</span></li>
+          <li><b>Token exchange instead of hand-rolled minting.</b> <span>Same scoped card, issued by
+            the IdP you already run.</span></li>
+          <li><b>Policy as a service the CX team owns.</b> <span>Return windows should not require a deploy.</span></li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="tag">Evidence</span>
+        <h3>13 checks, and three real bugs</h3>
+        <p>Ten scripted conversations assert on the trace — including that a tool was never
+          <em>reachable</em>, not merely never called. Three probes bypass the conversation entirely:
+          token scoping, backend failure, and an attempt to redirect an outbound email.</p>
+        <p style="margin-top:10px">They caught an order number being parsed as a ZIP code, a turn&rsquo;s
+          first message being silently dropped, and a schema the API rejects — which had quietly
+          disabled routing on every turn.</p>
+      </div>
+    </div>
+    <p class="pull">Deflection rate is a vanity metric if the contained conversations were bad ones.
+      <b>These assert the properties that survive a model swap.</b></p>
+  </section>
+
+  <!-- A ................................................................ -->
+  <section class="slide appendix">
+    <div>
+      <span class="eyebrow">Appendix &middot; if asked</span>
+      <h2>The token service, and what would replace it</h2>
+    </div>
+    <div class="cols pair">
+      <div class="card">
+        <span class="tag">Today &middot; hand-rolled</span>
+        <ul class="guards">
+          <li><span class="mono">hmac.compare_digest</span> against my own table.</li>
+          <li><b>HS256</b> — one shared secret both signs <em>and</em> verifies, so anything that can
+            check a token can also mint one.</li>
+          <li><span class="mono">amr</span> is <b>self-attested</b>: my word, in a token I signed, for how I checked.</li>
+          <li>No revocation. A JWT is valid until <span class="mono">exp</span> — the 10-minute TTL is
+            damage limitation, not a kill switch.</li>
+          <li>No key rotation, no <span class="mono">kid</span>. Rotating invalidates every live token at once.</li>
+          <li>Factors are knowledge-based: email plus a ZIP.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">Production &middot; the IdP you already run</span>
+        <ul class="guards">
+          <li>Client authentication by <span class="mono">private_key_jwt</span> or mTLS — or workload
+            identity, and no static credential at all.</li>
+          <li><b>RFC 8693 token exchange</b> mints a token scoped to one customer, audienced to the
+            order service.</li>
+          <li>An <span class="mono">act</span> claim records the delegation — <b>the agent, acting for
+            Sarah</b> — revocable without touching her account.</li>
+          <li>Asymmetric signing plus JWKS: verifiers can verify and can never mint.</li>
+          <li>The IdP owns MFA, lockout, risk signals, revocation and the audit trail.</li>
+          <li>Factors become possession-based: a link, a code, a passkey.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="pull">The seam is <b>104 lines and two functions</b> — twelve call sites, all through
+      that pair. The swap makes <span class="mono">identity.py</span> <em>smaller</em>, and none of
+      this moves: no tool accepts a customer id, every read still derives from
+      <span class="mono">sub</span>, tools stay gated on auth state.</p>
+  </section>
+</main>
+
+<footer class="nav">
+  <div style="display:flex;gap:8px">
+    <button class="btn" id="prev">&larr; Back</button>
+    <button class="btn" id="next">Next &rarr;</button>
+  </div>
+  <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+  <span class="hint">&larr; &rarr; to move &middot; &#8984;P for PDF</span>
+</footer>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+const dots = document.getElementById('dots');
+let i = 0;
+
+slides.forEach((s, n) => {
+  const b = document.createElement('button');
+  b.className = 'dot'; b.type = 'button';
+  b.textContent = s.classList.contains('appendix') ? 'A' : n + 1;
+  b.setAttribute('role', 'tab');
+  b.setAttribute('aria-label',
+    (s.classList.contains('appendix') ? 'Appendix: ' : 'Slide ' + (n + 1) + ': ')
+    + s.querySelector('h1,h2').textContent);
+  b.addEventListener('click', () => go(n));
+  dots.appendChild(b);
+});
+
+function go(n){
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach((s, k) => s.classList.toggle('on', k === i));
+  [...dots.children].forEach((d, k) => d.setAttribute('aria-current', String(k === i)));
+  const main = slides.filter(x => !x.classList.contains('appendix')).length;
+  document.getElementById('count').textContent =
+    slides[i].classList.contains('appendix') ? `appendix · ${main} slides` : `${i + 1} / ${main}`;
+  document.getElementById('prev').disabled = i === 0;
+  document.getElementById('next').disabled = i === slides.length - 1;
+}
+document.getElementById('prev').addEventListener('click', () => go(i - 1));
+document.getElementById('next').addEventListener('click', () => go(i + 1));
+addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') go(i + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') go(i - 1);
+});
+go(0);
+</script>

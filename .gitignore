@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+.pgdata/
+outbox/
+.DS_Store
+# local scratch — never commit
+task/

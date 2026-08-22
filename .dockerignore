@@ -1,0 +1,16 @@
+# Keep the build context small and free of anything local.
+.venv/
+.pgdata/
+outbox/
+.git/
+.gitignore
+__pycache__/
+**/__pycache__/
+*.pyc
+.env
+.DS_Store
+task/
+README.md
+run.sh
+run_local.py
+requirements-dev.txt

@@ -1,0 +1,42 @@
+name: evals
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: bookly
+          POSTGRES_PASSWORD: bookly
+          POSTGRES_DB: bookly
+        options: >-
+          --health-cmd "pg_isready -U bookly -d bookly"
+          --health-interval 2s --health-timeout 3s --health-retries 20
+        ports: ["5432:5432"]
+
+    env:
+      DATABASE_URL: postgresql://bookly:bookly@localhost:5432/bookly
+      # No key in CI: the scripted engine exercises the orchestration, and the
+      # wire check verifies the request shape against a stubbed transport.
+      BOOKLY_MOCK_LLM: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Conversation evals and probes
+        run: python -m evals.run
+
+      - name: Anthropic request contract
+        run: python -m evals.wire_check

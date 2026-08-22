@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bookly
+      POSTGRES_PASSWORD: bookly
+      POSTGRES_DB: bookly
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookly -d bookly"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://bookly:bookly@db:5432/bookly
+      # Optional. With no key the agent runs its deterministic scripted engine,
+      # so `docker compose up` works out of the box.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      BOOKLY_JWT_SECRET: ${BOOKLY_JWT_SECRET:-dev-only-not-a-real-secret}
+      # Two tiers: the agent writes to the customer, the router picks a label.
+      BOOKLY_MODEL: ${BOOKLY_MODEL:-claude-sonnet-5}
+      BOOKLY_ROUTER_MODEL: ${BOOKLY_ROUTER_MODEL:-claude-haiku-4-5}
+      BOOKLY_EFFORT: ${BOOKLY_EFFORT:-low}
+      BOOKLY_THINKING: ${BOOKLY_THINKING:-off}
+      # All optional. Without SMTP, handoff emails land in outbox/ as .eml
+      # files and are served at /api/outbox.
+      BOOKLY_SMTP_HOST: ${BOOKLY_SMTP_HOST:-}
+      BOOKLY_SMTP_PORT: ${BOOKLY_SMTP_PORT:-587}
+      BOOKLY_SMTP_USER: ${BOOKLY_SMTP_USER:-}
+      BOOKLY_SMTP_PASSWORD: ${BOOKLY_SMTP_PASSWORD:-}
+      BOOKLY_EMAIL_FROM: ${BOOKLY_EMAIL_FROM:-Bookly Support <support@bookly.example>}
+      BOOKLY_DEMO_EMAIL: ${BOOKLY_DEMO_EMAIL:-}
+    volumes:
+      # So the .eml files the agent writes are visible on the host.
+      - ./outbox:/srv/outbox
+    depends_on:
+      db:
+        condition: service_healthy
