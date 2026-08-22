@@ -113,13 +113,11 @@ customer message
 │ 3. SERVE   hand-written tool loop (max 6 iterations)         │
 │            ├─ Messages API, tools = only what step 2 allowed │
 │            ├─ execute → JWT authorises → Postgres            │
-│            └─ recompute the tool list and go again           │
-└──────────────────────────────────────────────────────────────┘
-      ▼
-┌──────────────────────────────────────────────────────────────┐
-│ 4. RESOLVE answer, or hand off: the human gets the working,  │
-│            the customer gets it in writing. Code forces the  │
-│            handoff on refusal, budget or backend failure     │
+│            ├─ recompute the tool list and go again           │
+│            └─ exit: an answer, or escalate_to_human — itself │
+│               just a tool. The human gets the working, the   │
+│               customer gets it in writing. Code forces the   │
+│               handoff on refusal, budget or backend failure  │
 └──────────────────────────────────────────────────────────────┘
       ▼
    reply + one structured trace line per turn

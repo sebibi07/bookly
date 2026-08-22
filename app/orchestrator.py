@@ -1,11 +1,16 @@
 """The agent loop.
 
-Four steps, run every turn:
+Three steps, run every turn:
 
   1. NEED  - classify intent with a separate constrained call
   2. KNOW  - decide whether this intent requires identity, and gate tools on it
-  3. SERVE - run the tool loop with only the tools this state permits
-  4. RESOLVE - finish, or hand to a human rather than improvise
+  3. SERVE - run the tool loop with only the tools this state permits, until it
+             reaches an answer or hands to a human rather than improvise
+
+Resolution is not a fourth step, because it is not a separate phase: every way
+a turn can end is a way out of the step 3 loop. An answer is the loop running
+out of tool calls; a handoff is ``escalate_to_human``, dispatched like any other
+tool, forced by code on a refusal, a spent budget or a backend failure.
 
 Every step is a mix. The model does the probabilistic, language-shaped part --
 reading a messy sentence to propose an intent in step 1, collecting the two
