@@ -75,6 +75,12 @@ p{margin:0}
 /* the three steps, reusing the app's chip language */
 .steps{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
 .steps.three{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+/* Each card is a subgrid of the same four rows -- title, the customer-facing
+   line, model, code -- so the rule under that line, and both role chips, sit at
+   one height across all three cards however the sentences happen to wrap. */
+@supports (grid-template-rows:subgrid){
+  .steps.three .step{display:grid;grid-template-rows:subgrid;grid-row:span 4;row-gap:0}
+}
 .step .cust{font-size:14.5px;color:var(--ink);line-height:1.45;margin-bottom:10px;
   padding-bottom:10px;border-bottom:1px solid var(--line)}
 .step .rl{display:flex;gap:8px;margin-top:9px;font-size:12px;line-height:1.42;align-items:flex-start}
