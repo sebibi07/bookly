@@ -91,6 +91,14 @@ p{margin:0}
 .role.m{border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft)}
 .role.c{border:1px solid var(--ok);color:var(--ok);background:var(--ok-soft)}
 .cmt{color:var(--muted)}
+/* Submission links: PDF only. Slide 1 is exactly full on screen, so showing
+   these there clips the step cards. Printed as visible URLs as well as anchors,
+   so the PDF still works if hyperlinks are stripped or it goes on paper. */
+.links{display:none;flex-wrap:wrap;gap:5px 18px;align-items:baseline;
+  font-size:12.5px;color:var(--muted);padding-top:11px;border-top:1px solid var(--line)}
+.links b{color:var(--ink);font-weight:600;letter-spacing:.01em}
+.links a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-soft)}
+.links .free{color:var(--ok)}
 /* The two 1s are the argument. Make them visibly the same 1. */
 .hi{background:var(--accent-soft);color:var(--accent);font-weight:600;
   padding:1px 4px;border-radius:3px;box-decoration-break:clone}
@@ -154,12 +162,26 @@ ol.next span{color:var(--muted)}
 
 /* ---- print to PDF: one slide per page ---- */
 @media print{
-  @page{size:landscape;margin:14mm}
-  main{align-items:flex-start}
+  /* One slide per page at the geometry the deck is designed for (1280x800).
+     The previous rule kept the on-screen height cap, so slide 1 overflowed
+     onto a second page and the rest were silently clipped. */
+  @page{size:1280px 800px;margin:0}
+  html,body{height:auto;background:#fff}
   .bar,.nav{display:none}
-  .slide{display:flex!important;page-break-after:always;max-width:none;gap:16px}
+  main{display:block;flex:none;padding:0}
+  .slide{display:flex!important;box-sizing:border-box;
+    width:1280px;height:800px;max-width:none;max-height:none;overflow:hidden;
+    padding:52px 50px;page-break-after:always;justify-content:center}
   .slide:last-child{page-break-after:auto}
-  body{background:#fff}
+  .links{display:flex}
+  a{text-decoration:none}
+  /* Chrome resolves width-based media queries against its own window when
+     printing, not against @page, so the <=1040px stacking rule fires and the
+     side-by-side code columns collapse (and then clip). Restore them here --
+     this block is later in the cascade, so it wins. */
+  .pair{grid-template-columns:1fr 1fr}
+  .split{grid-template-columns:1.15fr .85fr}
+  pre{font-size:13px}
 }
 </style>
 
@@ -201,6 +223,11 @@ ol.next span{color:var(--muted)}
     </div>
     <p class="pull">Every step is probabilistic and deterministic.
       <b>A system prompt asking the model not to do something is not enough.</b></p>
+    <p class="links">
+      <span><b>Demo</b> <a href="https://www.loom.com/share/b60607974853446896be084a6a1787a7">www.loom.com/share/b60607974853446896be084a6a1787a7</a></span>
+      <span><b>Code &amp; run instructions</b> <a href="https://github.com/sebibi07/bookly">github.com/sebibi07/bookly</a></span>
+      <span class="free">Both provided &middot; runs in one command, no API key needed</span>
+    </p>
   </section>
 
   <!-- 2 ................................................................ -->

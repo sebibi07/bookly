@@ -63,16 +63,16 @@ That order is what the customer notices:
   because the answer does not depend on who is asking.
 - Give your email, ZIP and order number in one sentence and you are not asked
   for them again.
-- Two open orders? It asks which one. It does not guess the newest.
+- Two open orders? It asks which one and does not guess the newest.
 - If a return is outside the window it says no, shows the arithmetic, and offers
-  a human. It does not stall.
+  a human. 
 - After a handoff you get an email with what you asked and what was already
   checked.
 
 The same order is what makes the agent safe to ship. The risk with an agent is
 not that it says something clumsy. It is that it *does* something: reads another
 customer's order, approves a return outside policy, promises a delivery date
-nobody can keep. A system prompt asking it not to is not a control.
+nobody can keep. A system prompt asking it not to is not enough.
 
 So in this agent, the decisions that matter are not in the prompt:
 
@@ -290,14 +290,11 @@ PASS  policy_question_needs_no_identity   PASS  prompt_injection_is_contained
 PASS  return_outside_window_is_refused    PASS  verification_locks_out
 PASS  damaged_return_is_created           PASS  vague_opener_gets_a_question
 PASS  late_parcel_escalates               PASS  customer_asks_for_a_human
-PASS  token_scoping                        PASS  backend_failure
+PASS  token_scoping                       PASS  backend_failure
 PASS  email_artefacts
 13/13 passed
 ```
 
-Some of these were written before the code passed them, and two caught real bugs:
-an order number's digits being parsed as a ZIP code, and a turn's first message
-being silently dropped when the agent spoke before calling a tool.
 
 `smoke.py` exists because the other two suites share a blind spot. Both avoid
 the network — which is what makes them fast and free, and also means a request
